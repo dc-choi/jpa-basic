@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="2.2"
+             xmlns="http://xmlns.jcp.org/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_2.xsd">
+    <!-- 메인에서 불러올 때 가져오는 persistence 이름과 정보들 -->
+    <persistence-unit name="hello">
+        <properties>
+            <!-- 필수 속성 -->
+            <property name="javax.persistence.jdbc.driver" value="org.h2.Driver"/>
+            <property name="javax.persistence.jdbc.user" value="sa"/>
+            <property name="javax.persistence.jdbc.password" value=""/>
+            <property name="javax.persistence.jdbc.url" value="jdbc:h2:mem:jpabasic"/>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect"/>
+            <!-- 옵션 -->
+            <property name="hibernate.show_sql" value="true"/>
+            <property name="hibernate.format_sql" value="true"/>
+            <property name="hibernate.use_sql_comments" value="true"/>
+            <!--
+                데이터 베이스 스키마를 자동으로 생성할 수 있는 기능이다.
+
+                create: 기존 테이블 삭제후 다시 생성
+                create-drop: create와 같으나 종료시점에 테이블 drop
+                update: 변경내용만 반영된다.
+                valudate: 엔티티와 테이블이 정상 매핑되었는지만 확인한다.
+                none: 사용하지 않는다.
+
+                운영에서는 create, create-drop, update를 사용하면 안된다.
+                개발 초기에는 create 또는 update
+                테스트 서버는 update 또는 validate
+                스테이징과 운영은 validate 또는 none
+            -->
+            <property name="hibernate.hbm2ddl.auto" value="create" />
+        </properties>
+    </persistence-unit>
+</persistence>
