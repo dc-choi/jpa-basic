@@ -107,6 +107,33 @@ public class App {
                     .setMaxResults(100) // limit
                     .getResultList();
 
+            Team team = new Team();
+            team.setName("A");
+            entityManager.persist(team);
+
+            Developer developer = new Developer();
+            developer.setName("choi");
+            developer.setTeam(team); // 이 코드만 있어도 데이터의 누락은 없다.
+            entityManager.persist(developer);
+
+            // team.getDeveloper().add(developer); // 하지만 양방향 매핑관계에서는 이 코드도 있는게 좋음.
+
+            // entityManager.flush(); // 변경내용 동기화
+            // entityManager.clear(); // 영속성 컨텍스트 초기화
+
+//            Developer findDeveloper = entityManager.find(Developer.class, developer.getId());
+//
+//            Team findTeam = findDeveloper.getTeam();
+//            System.out.println("findDeveloper = " + findDeveloper.getName());
+//            System.out.println("findTeam = " + findTeam.getName());
+
+            // Developer findDev = entityManager.find(Developer.class, developer.getId());
+            Team findTeam = entityManager.find(Team.class, team.getId()); // 1차 캐시에 있어서 flush를 안하면 select가 안됨
+            List<Developer> findDev = findTeam.getDeveloper();
+            for (Developer developer1 : findDev) {
+                System.out.println("developer1 = " + developer1.getName());
+            }
+
             transaction.commit();
         } catch (Exception e) {
             transaction.rollback();

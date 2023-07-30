@@ -93,7 +93,7 @@ import java.time.LocalDateTime;
  *
  * 권장: Long + 대체키 + 키 생성전략 사용
  */
-@Entity
+// @Entity
 @Table(name = "member_old", uniqueConstraints = @UniqueConstraint(name = "name", columnNames = "name"))
 //@SequenceGenerator(
 //        name = "MEMBER_SEQ_GENERATOR", // 식별자 생성기 이름
