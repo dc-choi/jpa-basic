@@ -92,8 +92,20 @@ import java.time.LocalDateTime;
  * 미래까지 이 조건을 만족하는 자연키는 찾기 어렵다. 대체키를 사용하자.
  *
  * 권장: Long + 대체키 + 키 생성전략 사용
+ *
+ * @JoinColumn
+ * 외래키를 매핑시킬 때 사용한다.
+ *
+ * 속성
+ * 1. name: 매핑할 외래키의 이름
+ * 2. referencedColumnName: 외래키가 참조하는 대상 테이블의 컬럼명
+ * 3. foreignKey: 외래키 제약조건을 직접 지정할 수 있다. 이 속성은 테이블을 생성할 때만 사용한다.
+ * @ForeignKey 어노테이션을 사용해서 정의한다.
+ * 보통 ConstraintMode.NO_CONSTRAINT를 사용해서 물리적으로 관계를 끊는데 사용한다.
+ *
+ * 나머지 속성은 @Column의 속성과 같다.
  */
-// @Entity
+@Entity
 @Table(name = "member_old", uniqueConstraints = @UniqueConstraint(name = "name", columnNames = "name"))
 //@SequenceGenerator(
 //        name = "MEMBER_SEQ_GENERATOR", // 식별자 생성기 이름

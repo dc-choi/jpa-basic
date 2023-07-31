@@ -23,4 +23,8 @@ public class Item {
 
     @OneToMany(mappedBy = "item")
     private List<OrderItem> orderItem;
+
+    // mappedBy가 있는 쪽이 주인이 아니다.
+    @ManyToMany(mappedBy = "items")
+    private List<Category> categories;
 }

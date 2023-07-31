@@ -28,4 +28,8 @@ public class Order {
 
     @OneToMany(mappedBy = "order")
     private List<OrderItem> orderItem;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "delivery_id")
+    private Delivery delivery;
 }

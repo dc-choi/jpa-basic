@@ -11,7 +11,7 @@ import javax.persistence.*;
  * 객체는 참조를 사용해서 연관된 객체를 찾는다.
  * 테이블과 객체의 패러다임은 이런 큰 간격이 있다.
  */
-// @Entity
+@Entity
 @Table(name = "developer")
 @Getter
 @Setter
@@ -28,4 +28,8 @@ public class Developer {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "team_id") // id가 아니라 team_id로 해야 충돌이 일어나지 않는다.
     private Team team;
+
+    @OneToOne
+    @JoinColumn(name = "locker_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    private Locker locker;
 }
