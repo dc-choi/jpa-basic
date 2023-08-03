@@ -21,11 +21,11 @@ public class Category {
     @JoinColumn(name = "parent_id")
     private Category parent;
 
-    @OneToMany(mappedBy = "parent")
+    @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY)
     private List<Category> child;
 
     // @JoinTable이 있는 쪽이 주인에 해당함.
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "category_item",
             joinColumns = @JoinColumn(name = "category_id"), // 현 엔티티 입장에서 조인시키는 것

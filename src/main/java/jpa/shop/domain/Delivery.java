@@ -26,6 +26,6 @@ public class Delivery {
     @Enumerated(EnumType.STRING)
     private DeliveryStatus status;
 
-    @OneToMany(mappedBy = "delivery")
+    @OneToMany(mappedBy = "delivery", fetch = FetchType.LAZY)
     private List<Order> order;
 }
