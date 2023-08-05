@@ -1,7 +1,6 @@
 package jpa;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -106,6 +105,7 @@ import java.time.LocalDateTime;
  * 나머지 속성은 @Column의 속성과 같다.
  */
 @Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "member_old", uniqueConstraints = @UniqueConstraint(name = "name", columnNames = "name"))
 //@SequenceGenerator(
 //        name = "MEMBER_SEQ_GENERATOR", // 식별자 생성기 이름
@@ -144,4 +144,32 @@ public class MemberOld {
 
     @Transient // 특정 프로퍼티를 컬럼에 매핑하지 않음
     private String temp;
+
+    @Embedded // 값 타입을 사용하는 곳에서 표시
+    private Period period;
+
+    @Embedded // 값 타입을 사용하는 곳에서 표시
+    private Address address;
+
+    @Embedded
+    @AttributeOverrides({ // 한 엔티티에서 같은 값 타입을 사용하면 이 어노테이션을 사용한다.
+            @AttributeOverride(name = "workingDate", column = @Column(name = "worked_at", columnDefinition = "DATETIME")),
+            @AttributeOverride(name = "leaveDate", column = @Column(name = "leaved_at", columnDefinition = "DATETIME"))
+    })
+    private Period workPeriod;
+
+    @Builder
+    public MemberOld(Long id, String name, Integer age, RoleType roleType, LocalDateTime createdDate, LocalDateTime lastModifiedDate, String description, String temp, Period period, Address address, Period workPeriod) {
+        this.id = id;
+        this.name = name;
+        this.age = age;
+        this.roleType = roleType;
+        this.createdDate = createdDate;
+        this.lastModifiedDate = lastModifiedDate;
+        this.description = description;
+        this.temp = temp;
+        this.period = period;
+        this.address = address;
+        this.workPeriod = workPeriod;
+    }
 }

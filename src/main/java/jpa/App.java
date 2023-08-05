@@ -4,6 +4,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
+import java.util.Arrays;
 
 /**
  * 영속성 컨텍스트
@@ -169,6 +170,19 @@ public class App {
 //            for (Developer developer1 : findDev) {
 //                System.out.println("developer1 = " + developer1.getName());
 //            }
+
+            Address address = Address.builder()
+                    .city("a")
+                    .street("b")
+                    .zipcode("c")
+                    .build();
+
+            MemberOld memberOld = MemberOld.builder()
+                    .address(address)
+                    .build();
+
+            System.out.println("memberOld.getAddress() = " + memberOld.getAddress());
+            System.out.println("memberOld.getAddress().getCity() = " + memberOld.getAddress().getCity());
 
             Child child = new Child();
             Child child2 = new Child();
