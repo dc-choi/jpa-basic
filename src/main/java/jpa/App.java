@@ -1,10 +1,7 @@
 package jpa;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityTransaction;
-import javax.persistence.Persistence;
-import java.util.Arrays;
+import javax.persistence.*;
+import java.util.List;
 
 /**
  * 영속성 컨텍스트
@@ -171,33 +168,146 @@ public class App {
 //                System.out.println("developer1 = " + developer1.getName());
 //            }
 
-            Address address = Address.builder()
-                    .city("a")
-                    .street("b")
-                    .zipcode("c")
-                    .build();
+//            Address address = Address.builder()
+//                    .city("a")
+//                    .street("b")
+//                    .zipcode("c")
+//                    .build();
+//
+//            MemberOld memberOld = MemberOld.builder()
+//                    .address(address)
+//                    .build();
+//
+//            System.out.println("memberOld.getAddress() = " + memberOld.getAddress());
+//            System.out.println("memberOld.getAddress().getCity() = " + memberOld.getAddress().getCity());
+//
+//            Child child = new Child();
+//            Child child2 = new Child();
+//
+//            Parent parent = new Parent();
+//            parent.addChild(child);
+//            parent.addChild(child2);
+//
+//            entityManager.persist(parent);
+//
+//            entityManager.flush();
+//
+//            Parent findParent = entityManager.find(Parent.class, 1L);
+//            System.out.println("findParent.getName = " + findParent.getName());
+//            System.out.println("findParent.getChilds = " + findParent.getChildList());
 
-            MemberOld memberOld = MemberOld.builder()
-                    .address(address)
-                    .build();
+            /**
+             * JPQL
+             *
+             * JPA는 SQL을 추상화한 JPQL을 사용한다. SQL과 비슷하다.
+             * 두개의 차이점은 JPQL은 엔티티 객체를 대상으로 쿼리를 하고 SQL 데이터베이스 테이블을 대상으로 쿼리를 함.
+             * JPQL은 한마디로 요약하자면 객체지향적인 SQL이다.
+             *
+             * 엔티티와 속성은 대소문자 구분을 함. (Member, age)
+             * JPQL 키워드는 대소문자 구분을 하지않는다. (SELECT, FROM, where)
+             * 엔티티 이름 사용, 테이블 이름이 아님(Member)
+             * 별칭은 필수(m) (as는 생략가능)
+             *
+             * query.getResultList()
+             * 결과가 하나 이상일 때 리스트 반환
+             * 결과가 없으면 빈 리스트 반환
+             *
+             * query.getSingleResult()
+             * 결과가 정확히 하나. 단일 객체 반환
+             * 결과가 없으면: javax.persistence.NoResultException
+             * 둘 이상이면: javax.persistence.NonUniqueResultException
+             *
+             * 바인딩 기준
+             * SELECT m FROM Member m where m.username=:username
+             * query.setParameter("username", usernameParam);
+             *
+             * 프로젝션
+             * SELECT 절에 조회할 대상을 지정하는 것
+             * 프로젝션 대상: 엔티티, 임베디드 타입, 스칼라 타입(숫자, 문자등 기본 데이터 타입)
+             * new 연산자를 사용해서 DTO를 통해 가져오는 방법이 가장 좋다. 하지만 패키지명을 그대로 적어야 한다는 단점이 있다.
+             *
+             * 페이징 API
+             * JPA는 페이징 API를 간단하게 추상화해준다...
+             * setFirstResult(int startPosition) : 조회 시작 위치 (0부터 시작) : offset
+             * setMaxResults(int maxResult) : 조회할 데이터 수 : limit
+             *
+             * 조인
+             * join, left join을 지원한다...
+             * SELECT m FROM Member m JOIN m.team t => join
+             * SELECT m FROM Member m LEFT JOIN m.team t => left join
+             *
+             * 서브쿼리
+             * [NOT] EXISTS (subquery): 서브쿼리에 결과가 존재하면 참
+             * select m from Member m where exists (select t from m.team t where t.name = ‘팀A')
+             *
+             * {ALL | ANY | SOME} (subquery)
+             *
+             * ALL은 모두 만족하면 참이라는 의미이고 나머지는 조건을 하나라도 만족하면 참이라는 의미이다.
+             * select o from Order o where o.orderAmount > ALL (select p.stockAmount from Product p)
+             *
+             * [NOT] IN (subquery): 서브쿼리의 결과 중 하나라도 같은 것이 있으면 참
+             * select m from Member m where m.team = ANY (select t from Team t)
+             *
+             * JPA는 WHERE, HAVING 절에서만 서브 쿼리 사용 가능
+             * SELECT 절도 가능(하이버네이트에서 지원)
+             * FROM 절의 서브 쿼리는 현재 JPQL에서 불가능 (조인으로 풀 수 있으면 풀어서 해결)
+             * 하이버네이트6 부터는 FROM 절의 서브쿼리를 지원합니다.
+             *
+             * JPQL 기타
+             * SQL과 문법이 같은 식
+             * EXISTS, IN
+             * AND, OR, NOT
+             * =, >, >=, <, <=, <>
+             * BETWEEN, LIKE, IS NULL
+             *
+             * 기본 case식
+             * select
+             * case when m.age <= 10 then '학생요금' when m.age >= 60 then '경로요금'
+             * end
+             * else '일반요금'
+             * from Member m
+             *
+             * 단순 case식
+             * select
+             * case t.name
+             * when '팀A' then '인센티브110%' when '팀B' then '인센티브120%'
+             * end
+             * else '인센티브105%'
+             * from Team t
+             *
+             * COALESCE: 하나씩 조회해서 null이 아니면 반환
+             * select coalesce(m.username,'이름 없는 회원') from Member m
+             *
+             * NULLIF: 두 값이 같으면 null 반환, 다르면 첫번째 값 반환
+             * select NULLIF(m.username, '관리자') from Member m
+             *
+             * JPQL 기본 함수
+             * CONCAT, SUBSTRING, TRIM
+             * LOWER, UPPER, LENGTH, LOCATE
+             * ABS, SQRT, MOD
+             * SIZE(컬렉션의 사이즈를 확인하는 함수), INDEX(JPA 용도)
+             */
+            List<MemberOld> likeKim = entityManager.createQuery("select m from MemberOld m where m.name like '%kim%'", MemberOld.class)
+                    .setFirstResult(1)
+                    .setMaxResults(100)
+                    .getResultList();
 
-            System.out.println("memberOld.getAddress() = " + memberOld.getAddress());
-            System.out.println("memberOld.getAddress().getCity() = " + memberOld.getAddress().getCity());
+            List<MemberOld> resultList = entityManager.createQuery("select m from MemberOld m where m.age > 18", MemberOld.class)
+                    .getResultList();
 
-            Child child = new Child();
-            Child child2 = new Child();
+            // 반환 타입이 명확할 때 사용
+            TypedQuery<MemberOld> typedQuery = entityManager.createQuery("SELECT m FROM Member m", MemberOld.class);
 
-            Parent parent = new Parent();
-            parent.addChild(child);
-            parent.addChild(child2);
+            // 반환 타입이 명확하지 않을 때 사용
+            // Query query = entityManager.createQuery("select m.username, m.age from Member m");
 
-            entityManager.persist(parent);
-
-            entityManager.flush();
-
-            Parent findParent = entityManager.find(Parent.class, 1L);
-            System.out.println("findParent.getName = " + findParent.getName());
-            System.out.println("findParent.getChilds = " + findParent.getChildList());
+            /**
+             * QueryDSL
+             *
+             * 문자가 아닌 자바코드로 JPQL을 작성할 수 있음
+             * JPQL 빌더 역할을 하며 컴파일 시점에 문법 오류를 찾을 수 있음
+             * 동적쿼리 작성이 편라하고 단순하며 쉽다는 장점이 있다.
+             */
 
             transaction.commit();
         } catch (Exception e) {
