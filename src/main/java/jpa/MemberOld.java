@@ -4,6 +4,10 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * 엔티티 매핑
@@ -151,15 +155,46 @@ public class MemberOld {
     @Embedded // 값 타입을 사용하는 곳에서 표시
     private Address address;
 
-    @Embedded
-    @AttributeOverrides({ // 한 엔티티에서 같은 값 타입을 사용하면 이 어노테이션을 사용한다.
-            @AttributeOverride(name = "workingDate", column = @Column(name = "worked_at", columnDefinition = "DATETIME")),
-            @AttributeOverride(name = "leaveDate", column = @Column(name = "leaved_at", columnDefinition = "DATETIME"))
-    })
-    private Period workPeriod;
+//    @Embedded
+//    @AttributeOverrides({ // 한 엔티티에서 같은 값 타입을 사용하면 이 어노테이션을 사용한다.
+//            @AttributeOverride(name = "workingDate", column = @Column(name = "worked_at", columnDefinition = "DATETIME")),
+//            @AttributeOverride(name = "leaveDate", column = @Column(name = "leaved_at", columnDefinition = "DATETIME"))
+//    })
+//    private Period workPeriod;
+
+    /**
+     * 값 타입 컬렉션
+     *
+     * 값 타입을 하나 이상 저장할 때 사용
+     * 데이터베이스는 컬렉션을 같은 테이블에 저장할 수 없다.
+     * 컬렉션을 저장하기 위한 별도의 테이블이 필요함.
+     *
+     * 값 타입 컬렉션도 지연 로딩 전략을 지원함.
+     * 영속성 전이 + 고아 객체 제거 기능을 필수로 가진다.
+     * 즉, 엔티티의 생명주기가 member_old에 있다.
+     *
+     * 단점
+     * 1. 엔티티와 다르게 식별자 개념이 없어 값을 변경하면 추적이 어려움
+     * 2. 값 타입 컬렉션에 변경 사항이 발생하면 주인 엔티티와 연관된 모든 데이터를 삭제하고
+     * 값 타입 컬렉션에 있는 현재 값을 모두 다시 저장한다.
+     * 3. 값 타입 컬렉션을 매핑하는 테이블은 모든 컬럼을 묶어서 기본 키를 구성해야 한다
+     * 즉, null을 입력할 수 없고, 중복 저장을 할 수 없다.
+     *
+     * 실무에서는 상황에 따라 값 타입 컬렉션 대신에 일대다 관계를 고려
+     * 일대다 관계를 위한 엔티티를 만들고, 여기에서 값 타입을 사용
+     * 영속성 전이(Cascade) + 고아 객체 제거를 사용해서 값 타입 컬 렉션 처럼 사용
+     */
+    @ElementCollection
+    @CollectionTable(name = "favorite_food", joinColumns = @JoinColumn(name = "member_id"))
+    @Column(name = "food_name") // 이 컬럼은 내가 직접 커스텀하기 때문에 컬럼명을 정해줘야 한다.
+    private Set<String> favoriteFood = new HashSet<>();
+
+    @ElementCollection
+    @CollectionTable(name = "address_history", joinColumns = @JoinColumn(name = "member_id"))
+    private List<Address> addressHistory = new ArrayList<>();
 
     @Builder
-    public MemberOld(Long id, String name, Integer age, RoleType roleType, LocalDateTime createdDate, LocalDateTime lastModifiedDate, String description, String temp, Period period, Address address, Period workPeriod) {
+    public MemberOld(Long id, String name, Integer age, RoleType roleType, LocalDateTime createdDate, LocalDateTime lastModifiedDate, String description, String temp, Period period, Address address, Set<String> favoriteFood, List<Address> addressHistory) {
         this.id = id;
         this.name = name;
         this.age = age;
@@ -170,6 +205,7 @@ public class MemberOld {
         this.temp = temp;
         this.period = period;
         this.address = address;
-        this.workPeriod = workPeriod;
+        this.favoriteFood = favoriteFood;
+        this.addressHistory = addressHistory;
     }
 }
